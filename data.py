@@ -310,23 +310,4 @@ def count_breaches_by_year_with_percent_increase(data):
     except Exception as e:
         print(f"Error in counting breaches by year with percent increase: {e}")
         return None
-
-
-
-# Driver code
-if __name__ == "__main__":
-    file_path = "breach_report.csv"
-    try:
-        # Load and preprocess data
-        data = pd.read_csv(file_path)
-        data['Breach Submission Date'] = pd.to_datetime(data['Breach Submission Date'])
-        data['Year'] = data['Breach Submission Date'].dt.year
-
-        # Count breaches by year with percent increase
-        breaches_per_year_with_increase = count_breaches_by_year_with_percent_increase(data)
-        if breaches_per_year_with_increase is not None:
-            save_to_csv(breaches_per_year_with_increase, "breaches_by_year_with_percent_increase.csv")
-
-        print("Breaches by year with percent increase analysis completed.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    
