@@ -1,0 +1,21 @@
+Location of Breached Information,Count
+Network Server,594
+Email,167
+Paper/Films,23
+Electronic Medical Record,18
+Other,9
+Laptop,7
+"Desktop Computer, Network Server",7
+Desktop Computer,6
+Other Portable Electronic Device,4
+"Electronic Medical Record, Network Server",3
+"Email, Other",3
+"Desktop Computer, Laptop, Network Server",2
+"Email, Network Server",2
+"Network Server, Other",2
+"Laptop, Other Portable Electronic Device",1
+"Electronic Medical Record, Network Server, Other",1
+"Desktop Computer, Other Portable Electronic Device",1
+"Desktop Computer, Electronic Medical Record, Email, Network Server",1
+"Desktop Computer, Electronic Medical Record, Email, Other Portable Electronic Device, Paper/Films",1
+"Desktop Computer, Electronic Medical Record, Email, Laptop",1
