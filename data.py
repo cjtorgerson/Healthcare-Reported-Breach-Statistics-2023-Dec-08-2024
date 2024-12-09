@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -313,44 +314,74 @@ def count_breaches_by_year_with_percent_increase(data):
         print(f"Error in counting breaches by year with percent increase: {e}")
         return None
 
-def create_incidents_heatmap(data, output_path="heatmap_by_state.png"):
+def create_us_heatmap(data_path, geojson_path, output_path="us_heatmap_fixed.png"):
     """
-    Create a heatmap of incidents by state.
+    Create a heatmap of incidents on a map of the United States.
 
-    :param data: DataFrame containing the breach data.
+    :param data_path: Path to the CSV file containing the breach data.
+    :param geojson_path: Path to the GeoJSON file containing U.S. state boundaries.
     :param output_path: Path to save the generated heatmap image.
     :return: None
     """
+
+    state_abbreviation_to_name = {
+        "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+        "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "FL": "Florida", "GA": "Georgia",
+        "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+        "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+        "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri",
+        "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey",
+        "NM": "New Mexico", "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+        "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+        "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont",
+        "VA": "Virginia", "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+        "DC": "District of Columbia"
+    }
     try:
-        # Group by state and count the number of incidents
+        # Load breach data
+        data = pd.read_csv(data_path)
+        
+        # Convert abbreviations to full state names
+        data['State'] = data['State'].map(state_abbreviation_to_name)
+        
+        # Group by state and count incidents
         state_incidents = data['State'].value_counts().reset_index()
         state_incidents.columns = ['State', 'Count']
+        
+        # Load GeoJSON for U.S. states
+        us_states = gpd.read_file(geojson_path)
 
-        # Create a pivot table for heatmap (dummy geographical layout)
-        # This example assumes a fictitious mapping of states for illustration.
-        # A real heatmap would use geospatial data or pre-defined coordinates.
-        states = sorted(state_incidents['State'].unique())
-        heatmap_data = pd.DataFrame(index=states, columns=states).fillna(0)
+        # Merge geospatial data with breach data
+        merged = us_states.merge(state_incidents, left_on='name', right_on='State', how='left')
+        merged['Count'] = merged['Count'].fillna(0)  # Fill missing states with zero counts
 
-        # Populate the heatmap data
-        for _, row in state_incidents.iterrows():
-            state = row['State']
-            count = row['Count']
-            heatmap_data.loc[state, state] = count
-
-        # Generate the heatmap
-        plt.figure(figsize=(12, 8))
-        plt.title("Heatmap of Incidents by State", fontsize=16)
-        plt.imshow(heatmap_data, cmap="YlGnBu", interpolation="nearest")
-        plt.colorbar(label="Number of Incidents")
-        plt.xticks(ticks=np.arange(len(states)), labels=states, rotation=90)
-        plt.yticks(ticks=np.arange(len(states)), labels=states)
-        plt.tight_layout()
+        # Plot the heatmap
+        fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+        merged.plot(column='Count', cmap='YlGnBu', linewidth=0.8, ax=ax, edgecolor='0.8', legend=True)
+        ax.set_title("Heatmap of Incidents by State", fontsize=16)
+        ax.axis('off')
 
         # Save the heatmap as an image
-        plt.savefig(output_path)
+        plt.savefig(output_path, dpi=300)
         plt.close()
-        print(f"Heatmap saved to {output_path}")
+        print(f"US Heatmap saved to {output_path}")
 
     except Exception as e:
-        print(f"An error occurred while creating the heatmap: {e}")
+        print(f"An error occurred while creating the US heatmap: {e}")
+
+
+if __name__ == "__main__":
+
+    import geopandas as gpd
+    gdf = gpd.read_file("map-assets/ne_110m_admin_1_states_provinces.shp")
+    gdf.to_file("map-assets/output.geojson", driver="GeoJSON")
+
+
+    # Example usage:
+    data_path = "breach_report.csv"  # Replace with your CSV file path
+    geojson_path = "map-assets/output.geojson"  # Replace with your GeoJSON file path
+    output_path = "us_heatmap.png"  # Path to save the heatmap
+
+    create_us_heatmap(data_path, geojson_path, output_path)
+
+
