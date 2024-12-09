@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 def save_to_csv(dataframe, output_path):
     """
@@ -310,4 +312,45 @@ def count_breaches_by_year_with_percent_increase(data):
     except Exception as e:
         print(f"Error in counting breaches by year with percent increase: {e}")
         return None
-    
+
+def create_incidents_heatmap(data, output_path="heatmap_by_state.png"):
+    """
+    Create a heatmap of incidents by state.
+
+    :param data: DataFrame containing the breach data.
+    :param output_path: Path to save the generated heatmap image.
+    :return: None
+    """
+    try:
+        # Group by state and count the number of incidents
+        state_incidents = data['State'].value_counts().reset_index()
+        state_incidents.columns = ['State', 'Count']
+
+        # Create a pivot table for heatmap (dummy geographical layout)
+        # This example assumes a fictitious mapping of states for illustration.
+        # A real heatmap would use geospatial data or pre-defined coordinates.
+        states = sorted(state_incidents['State'].unique())
+        heatmap_data = pd.DataFrame(index=states, columns=states).fillna(0)
+
+        # Populate the heatmap data
+        for _, row in state_incidents.iterrows():
+            state = row['State']
+            count = row['Count']
+            heatmap_data.loc[state, state] = count
+
+        # Generate the heatmap
+        plt.figure(figsize=(12, 8))
+        plt.title("Heatmap of Incidents by State", fontsize=16)
+        plt.imshow(heatmap_data, cmap="YlGnBu", interpolation="nearest")
+        plt.colorbar(label="Number of Incidents")
+        plt.xticks(ticks=np.arange(len(states)), labels=states, rotation=90)
+        plt.yticks(ticks=np.arange(len(states)), labels=states)
+        plt.tight_layout()
+
+        # Save the heatmap as an image
+        plt.savefig(output_path)
+        plt.close()
+        print(f"Heatmap saved to {output_path}")
+
+    except Exception as e:
+        print(f"An error occurred while creating the heatmap: {e}")
